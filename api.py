@@ -13,9 +13,11 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import ValidationError
 
 from invoice_extractor.config import (
+    REPO_ROOT,
     get_gemini_model,
     get_max_upload_size_bytes,
     get_max_upload_size_mb,
@@ -29,12 +31,19 @@ from invoice_extractor.loader import SUPPORTED_EXTENSIONS, InvalidDocumentError
 
 UPLOAD_CHUNK_BYTES = 64 * 1024  # 64 KB chunks to enforce size limit without buffering huge files.
 TEMP_FILE_PREFIX = "invoice_upload_"
+FRONTEND_INDEX = REPO_ROOT / "static" / "index.html"
 
 app = FastAPI(
     title="Invoice Extraction API",
     description="Upload a PDF, JPG, or PNG document to extract structured invoice JSON.",
     version="0.1.0",
 )
+
+
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    """Serve the minimal document-review frontend wired to POST /extract."""
+    return FileResponse(FRONTEND_INDEX)
 
 
 def _validate_filename_and_extension(filename: str | None) -> tuple[str, str]:

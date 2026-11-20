@@ -52,7 +52,9 @@ FastAPI (`api.py`) is the primary interface; a thin CLI (`extract.py`), batch ru
 ├── .env.example              # Environment variable template
 ├── .gitignore                # Excludes .env, Sample Pack/, caches, virtualenvs
 ├── requirements.txt          # Python dependencies
-├── api.py                    # Primary FastAPI service (POST /extract, GET /health, /docs)
+├── api.py                    # Primary FastAPI service (/, POST /extract, GET /health, /docs)
+├── static/
+│   └── index.html            # Minimal side-by-side upload & review frontend (Bonus)
 ├── extract.py                # Thin CLI wrapper for single-document extraction
 ├── batch_extract.py          # Batch runner calling extract_invoice() directly
 ├── eval.py                   # Evaluation harness over L01..L10 (04_EVAL_RULES.md)
@@ -83,8 +85,9 @@ FastAPI (`api.py`) is the primary interface; a thin CLI (`extract.py`), batch ru
 uvicorn api:app --reload
 ```
 
+- Web UI (upload a document and inspect extracted fields side-by-side): `http://127.0.0.1:8000/`
 - Health check: `http://127.0.0.1:8000/health`
-- Interactive Swagger docs (try file uploads in the browser): `http://127.0.0.1:8000/docs`
+- Interactive Swagger docs (try API requests in the browser): `http://127.0.0.1:8000/docs`
 
 Example request with `curl`:
 

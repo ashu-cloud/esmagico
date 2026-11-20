@@ -190,4 +190,4 @@ Measured from the final 20-document run ([logs/final_run_tokens.jsonl](logs/fina
 1. Build a larger, noisier labelled benchmark (50–100+ invoices including crumpled receipts, skewed scans, multi-currency credit notes, and multi-invoice PDFs) to stress-test failure modes and measure real review-flag recall/precision.
 2. Add semantic sanity checks (e.g., date range checks, non-empty vendor/invoice_number checks on invoices, duplicate invoice detection) to improve review-flag coverage beyond arithmetic errors.
 3. Run an optional side-by-side comparison against `gemini-3.1-flash-lite` (\$0.25/\$1.50 per 1M, ~30% cheaper) and an open-weight vision model (e.g., Groq) on the expanded benchmark.
-4. Add a lightweight web UI (Bonus #2) calling `POST /extract` to display the uploaded invoice alongside extracted fields and `needs_review` warnings.
+4. *(Bonus UI already included)* A lightweight, zero-framework document review workbench (`static/index.html`, served by FastAPI at `GET /`) is wired directly to `GET /health` and `POST /extract` for side-by-side document preview, structured field/line-item inspection, review-flag display, and JSON export.

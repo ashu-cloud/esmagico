@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice Extractor</title>
+  <style>
+    :root {
+      --bg: #f6f5f1;
+      --surface: #ffffff;
+      --surface-subtle: #faf9f6;
+      --border: #e4e2dc;
+      --ink: #171715;
+      --ink-muted: #66645e;
+      --ink-faint: #94918a;
+      --accent: #181816;
+      --accent-hover: #2f2f2b;
+      --ok-bg: #eef7f1;
+      --ok-border: #c5e3cf;
+      --ok-text: #165b33;
+      --warn-bg: #fef7e6;
+      --warn-border: #f2d593;
+      --warn-text: #8a5200;
+      --err-bg: #fdf0ef;
+      --err-border: #f0c2be;
+      --err-text: #99221a;
+      --neutral-bg: #f1f2f4;
+      --neutral-border: #d8dce2;
+      --neutral-text: #384152;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top bar */
+    .topbar {
+      height: 52px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .brand .subtitle {
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .health-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .health-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--ink-faint);
+    }
+
+    .health-dot.online {
+      background: #1f8f4e;
+    }
+
+    .health-dot.offline {
+      background: #c4362c;
+    }
+
+    .topbar a {
+      color: var(--ink-muted);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 1px;
+    }
+
+    .topbar a:hover {
+      color: var(--ink);
+      border-bottom-color: var(--ink);
+    }
+
+    /* Main split workspace */
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(340px, 1fr) minmax(420px, 1.15fr);
+      height: calc(100vh - 52px);
+      min-height: 540px;
+    }
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .pane-left {
+      border-right: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .pane-right {
+      background: var(--surface);
+    }
+
+    .pane-header {
+      height: 46px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .pane-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+    }
+
+    .pane-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--surface-subtle);
+      border-color: #c8c5bc;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-quiet {
+      padding: 4px 9px;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    /* Left pane: dropzone + document preview */
+    .viewer-body {
+      flex: 1;
+      min-height: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dropzone {
+      flex: 1;
+      border: 1px dashed #c7c4ba;
+      border-radius: 6px;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px 24px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--ink);
+      background: var(--surface-subtle);
+    }
+
+    .dropzone-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .dropzone-hint {
+      font-size: 12px;
+      color: var(--ink-muted);
+      margin-bottom: 16px;
+    }
+
+    .file-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .file-bar.visible {
+      display: flex;
+    }
+
+    .file-meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .file-name {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-size {
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+    }
+
+    .preview-stage {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-stage.visible {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-stage iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #ffffff;
+    }
+
+    .preview-stage img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      padding: 8px;
+    }
+
+    /* Right pane: tabs + results */
+    .tabs {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+      background: var(--surface-subtle);
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: var(--ink-muted);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 11px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: inset 0 0 0 1px var(--border);
+    }
+
+    .results-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .empty-state {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--ink-muted);
+      padding: 32px;
+    }
+
+    .empty-state p {
+      max-width: 340px;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .loading-state {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-subtle);
+      color: var(--ink);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .loading-state.visible {
+      display: flex;
+    }
+
+    .spinner {
+      width: 15px;
+      height: 15px;
+      border: 2px solid var(--border);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Status banner */
+    .banner {
+      border-radius: 6px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+
+    .banner-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .banner-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .banner ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      font-size: 12px;
+    }
+
+    .banner.ok {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+      color: var(--ok-text);
+    }
+
+    .banner.warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .banner.err {
+      background: var(--err-bg);
+      border-color: var(--err-border);
+      color: var(--err-text);
+    }
+
+    .banner.neutral {
+      background: var(--neutral-bg);
+      border-color: var(--neutral-border);
+      color: var(--neutral-text);
+    }
+
+    .timing {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      opacity: 0.85;
+    }
+
+    /* Metadata grid */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      margin: 0 0 8px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .meta-cell {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .meta-cell:nth-child(2n) {
+      border-right: 0;
+    }
+
+    .meta-cell:nth-last-child(-n+2) {
+      border-bottom: 0;
+    }
+
+    .meta-key {
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-bottom: 3px;
+    }
+
+    .meta-val {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      word-break: break-word;
+    }
+
+    .meta-val.mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meta-val.total-emphasis {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .null-val {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    /* Line items table */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+      background: var(--surface-subtle);
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .num {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .idx {
+      width: 34px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .neg {
+      color: var(--err-text);
+    }
+
+    tfoot td {
+      background: var(--surface-subtle);
+      border-top: 1px solid var(--border);
+      border-bottom: 0;
+      font-size: 12px;
+      color: var(--ink-muted);
+      padding: 7px 10px;
+    }
+
+    tfoot tr.total-row td {
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Raw JSON view */
+    .json-view {
+      margin: 0;
+      padding: 14px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.55;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 900px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .pane-left {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        min-height: 440px;
+      }
+      .preview-stage {
+        min-height: 360px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Invoice Extractor</h1>
+      <span class="subtitle">Document review workbench</span>
+    </div>
+    <div class="topbar-right">
+      <span class="health-pill" id="healthPill">
+        <span class="health-dot" id="healthDot"></span>
+        <span id="healthText">Checking API…</span>
+      </span>
+      <a href="/docs" target="_blank" rel="noopener">API Docs</a>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- Left pane: upload and preview -->
+    <section class="pane pane-left">
+      <div class="pane-header">
+        <span class="pane-title">Source Document</span>
+        <div class="pane-actions">
+          <button type="button" class="btn btn-quiet hidden" id="changeFileBtn">Replace file</button>
+          <button type="button" class="btn btn-primary" id="extractBtn" disabled>Extract</button>
+        </div>
+      </div>
+
+      <div class="viewer-body">
+        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="hidden" />
+
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload invoice PDF or image">
+          <div class="dropzone-title">Drop a PDF, JPG, or PNG here</div>
+          <div class="dropzone-hint">Digital invoices, scanned PDFs, phone photos, or non-invoices</div>
+          <button type="button" class="btn" id="chooseBtn">Choose file</button>
+        </div>
+
+        <div class="file-bar" id="fileBar">
+          <div class="file-meta">
+            <span class="file-name" id="fileName"></span>
+            <span class="file-size" id="fileSize"></span>
+          </div>
+          <button type="button" class="btn btn-quiet" id="clearBtn">Clear</button>
+        </div>
+
+        <div class="preview-stage" id="previewStage"></div>
+      </div>
+    </section>
+
+    <!-- Right pane: structured output and raw JSON -->
+    <section class="pane pane-right">
+      <div class="pane-header">
+        <span class="pane-title">Extracted Fields</span>
+        <div class="pane-actions">
+          <div class="tabs hidden" id="viewTabs" role="tablist">
+            <button type="button" class="tab active" id="tabStructured" role="tab" aria-selected="true">Structured</button>
+            <button type="button" class="tab" id="tabJson" role="tab" aria-selected="false">JSON</button>
+          </div>
+          <button type="button" class="btn btn-quiet hidden" id="copyBtn">Copy JSON</button>
+          <button type="button" class="btn btn-quiet hidden" id="downloadBtn">Download</button>
+        </div>
+      </div>
+
+      <div class="results-scroll">
+        <div class="loading-state" id="loadingState">
+          <div class="spinner"></div>
+          <span id="loadingText">Extracting document…</span>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+          <p>Select a PDF or image on the left and click <strong>Extract</strong> to view validated fields, line items, and review flags.</p>
+        </div>
+
+        <div id="resultContainer" class="hidden"></div>
+        <pre id="jsonContainer" class="json-view hidden"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const dropzone = document.getElementById("dropzone");
+    const chooseBtn = document.getElementById("chooseBtn");
+    const changeFileBtn = document.getElementById("changeFileBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const extractBtn = document.getElementById("extractBtn");
+    const fileBar = document.getElementById("fileBar");
+    const fileNameEl = document.getElementById("fileName");
+    const fileSizeEl = document.getElementById("fileSize");
+    const previewStage = document.getElementById("previewStage");
+
+    const loadingState = document.getElementById("loadingState");
+    const loadingText = document.getElementById("loadingText");
+    const emptyState = document.getElementById("emptyState");
+    const resultContainer = document.getElementById("resultContainer");
+    const jsonContainer = document.getElementById("jsonContainer");
+    const viewTabs = document.getElementById("viewTabs");
+    const tabStructured = document.getElementById("tabStructured");
+    const tabJson = document.getElementById("tabJson");
+    const copyBtn = document.getElementById("copyBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    let currentFile = null;
+    let currentPreviewUrl = null;
+    let lastResult = null;
+    let activeTab = "structured";
+    let timerHandle = null;
+
+    // Fetch server health and active model on load.
+    async function checkHealth() {
+      const dot = document.getElementById("healthDot");
+      const text = document.getElementById("healthText");
+      try {
+        const res = await fetch("/health");
+        if (!res.ok) throw new Error("API unavailable");
+        const data = await res.json();
+        dot.classList.add("online");
+        text.textContent = data.model || "API ready";
+      } catch {
+        dot.classList.add("offline");
+        text.textContent = "API offline";
+      }
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    function formatAmount(val) {
+      if (val === null || val === undefined || typeof val !== "number") return null;
+      return val.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function revokePreview() {
+      if (currentPreviewUrl) {
+        URL.revokeObjectURL(currentPreviewUrl);
+        currentPreviewUrl = null;
+      }
+    }
+
+    function renderPreview(file) {
+      revokePreview();
+      previewStage.innerHTML = "";
+      currentPreviewUrl = URL.createObjectURL(file);
+
+      const lower = file.name.toLowerCase();
+      if (file.type === "application/pdf" || lower.endsWith(".pdf")) {
+        const iframe = document.createElement("iframe");
+        iframe.src = currentPreviewUrl;
+        iframe.title = file.name;
+        previewStage.appendChild(iframe);
+      } else if (file.type.startsWith("image/") || /\.(jpe?g|png)$/i.test(lower)) {
+        const img = document.createElement("img");
+        img.src = currentPreviewUrl;
+        img.alt = file.name;
+        previewStage.appendChild(img);
+      } else {
+        const note = document.createElement("div");
+        note.style.padding = "24px";
+        note.style.color = "var(--ink-muted)";
+        note.style.fontSize = "13px";
+        note.textContent = "Preview unavailable for this file type. Click Extract to test API validation.";
+        previewStage.appendChild(note);
+      }
+    }
+
+    function selectFile(file) {
+      if (!file) return;
+      currentFile = file;
+      fileNameEl.textContent = file.name;
+      fileSizeEl.textContent = formatBytes(file.size);
+      dropzone.classList.add("hidden");
+      fileBar.classList.add("visible");
+      previewStage.classList.add("visible");
+      changeFileBtn.classList.remove("hidden");
+      extractBtn.disabled = false;
+      renderPreview(file);
+    }
+
+    function clearSelection() {
+      currentFile = null;
+      lastResult = null;
+      fileInput.value = "";
+      revokePreview();
+      previewStage.innerHTML = "";
+      previewStage.classList.remove("visible");
+      fileBar.classList.remove("visible");
+      dropzone.classList.remove("hidden");
+      changeFileBtn.classList.add("hidden");
+      extractBtn.disabled = true;
+
+      resultContainer.innerHTML = "";
+      resultContainer.classList.add("hidden");
+      jsonContainer.textContent = "";
+      jsonContainer.classList.add("hidden");
+      viewTabs.classList.add("hidden");
+      copyBtn.classList.add("hidden");
+      downloadBtn.classList.add("hidden");
+      emptyState.classList.remove("hidden");
+    }
+
+    function setTab(tab) {
+      activeTab = tab;
+      const isStruct = tab === "structured";
+      tabStructured.classList.toggle("active", isStruct);
+      tabStructured.setAttribute("aria-selected", String(isStruct));
+      tabJson.classList.toggle("active", !isStruct);
+      tabJson.setAttribute("aria-selected", String(!isStruct));
+      resultContainer.classList.toggle("hidden", !isStruct);
+      jsonContainer.classList.toggle("hidden", isStruct);
+    }
+
+    function renderValue(val, opts = {}) {
+      if (val === null || val === undefined) {
+        return '<span class="null-val">null</span>';
+      }
+      const cls = ["meta-val"];
+      if (opts.mono) cls.push("mono");
+      if (opts.emphasis) cls.push("total-emphasis");
+      return `<div class="${cls.join(" ")}">${escapeHtml(val)}</div>`;
+    }
+
+    function renderSuccess(data, elapsedSec) {
+      lastResult = data;
+      const prettyJson = JSON.stringify(data, null, 2);
+      jsonContainer.textContent = prettyJson;
+
+      let bannerHtml = "";
+      if (data.needs_review) {
+        const items = (data.review_reasons || [])
+          .map((r) => `<li>${escapeHtml(r)}</li>`)
+          .join("");
+        bannerHtml = `
+          <div class="banner warn">
+            <div class="banner-header">
+              <span>Needs Human Review</span>
+              <span class="timing">${elapsedSec}s</span>
+            </div>
+            <div class="banner-sub">Validation still failed after one retry:</div>
+            ${items ? `<ul>${items}</ul>` : ""}
+          </div>
+        `;
+      } else if (data.is_invoice === false) {
+        bannerHtml = `
+          <div class="banner neutral">
+            <div class="banner-header">
+              <span>Not an Invoice</span>
+              <span class="timing">${elapsedSec}s</span>
+            </div>
+            <div class="banner-sub">Classified as a non-invoice document. All invoice fields are null per schema.</div>
+          </div>
+        `;
+      } else {
+        const itemsSum = Array.isArray(data.line_items)
+          ? data.line_items.reduce((acc, row) => acc + (typeof row.amount === "number" ? row.amount : 0), 0)
+          : 0;
+        const tax = typeof data.tax_total === "number" ? data.tax_total : 0;
+        const total = typeof data.total === "number" ? data.total : 0;
+        const diff = Math.abs(itemsSum + tax - total);
+        bannerHtml = `
+          <div class="banner ok">
+            <div class="banner-header">
+              <span>Invoice &middot; Validated</span>
+              <span class="timing">${elapsedSec}s</span>
+            </div>
+            <div class="banner-sub">Schema valid &middot; Arithmetic check passed (diff ${diff.toFixed(2)})</div>
+          </div>
+        `;
+      }
+
+      const curr = data.currency ? `${data.currency} ` : "";
+      const taxDisplay = formatAmount(data.tax_total);
+      const totalDisplay = formatAmount(data.total);
+
+      const metaHtml = `
+        <h2 class="section-label">Summary</h2>
+        <div class="meta-grid">
+          <div class="meta-cell">
+            <div class="meta-key">Vendor</div>
+            ${renderValue(data.vendor)}
+          </div>
+          <div class="meta-cell">
+            <div class="meta-key">Invoice Number</div>
+            ${renderValue(data.invoice_number, { mono: true })}
+          </div>
+          <div class="meta-cell">
+            <div class="meta-key">Invoice Date</div>
+            ${renderValue(data.invoice_date, { mono: true })}
+          </div>
+          <div class="meta-cell">
+            <div class="meta-key">Currency</div>
+            ${renderValue(data.currency, { mono: true })}
+          </div>
+          <div class="meta-cell">
+            <div class="meta-key">Tax Total</div>
+            ${taxDisplay === null ? renderValue(null) : renderValue(`${curr}${taxDisplay}`, { mono: true })}
+          </div>
+          <div class="meta-cell">
+            <div class="meta-key">Total Payable</div>
+            ${totalDisplay === null ? renderValue(null) : renderValue(`${curr}${totalDisplay}`, { mono: true, emphasis: true })}
+          </div>
+        </div>
+      `;
+
+      let itemsHtml = "";
+      if (Array.isArray(data.line_items)) {
+        const rowsHtml = data.line_items.length
+          ? data.line_items
+              .map((item, idx) => {
+                const qty = item.quantity === null || item.quantity === undefined
+                  ? '<span class="null-val">&mdash;</span>'
+                  : escapeHtml(item.quantity);
+                const amtNum = typeof item.amount === "number" ? item.amount : null;
+                const amtStr = amtNum === null ? '<span class="null-val">null</span>' : escapeHtml(formatAmount(amtNum));
+                const negCls = amtNum !== null && amtNum < 0 ? " neg" : "";
+                return `
+                  <tr>
+                    <td class="idx">${idx + 1}</td>
+                    <td>${escapeHtml(item.description ?? "")}</td>
+                    <td class="num">${qty}</td>
+                    <td class="num${negCls}">${amtStr}</td>
+                  </tr>
+                `;
+              })
+              .join("")
+          : '<tr><td colspan="4" style="color: var(--ink-muted); text-align: center;">No line items</td></tr>';
+
+        const subtotal = data.line_items.reduce(
+          (acc, row) => acc + (typeof row.amount === "number" ? row.amount : 0),
+          0
+        );
+
+        itemsHtml = `
+          <h2 class="section-label">Line Items (${data.line_items.length})</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="idx">#</th>
+                  <th>Description</th>
+                  <th class="num">Qty</th>
+                  <th class="num">Amount${data.currency ? ` (${escapeHtml(data.currency)})` : ""}</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="text-align: right;">Sum of line items</td>
+                  <td class="num">${escapeHtml(formatAmount(subtotal) ?? "0.00")}</td>
+                </tr>
+                <tr>
+                  <td colspan="3" style="text-align: right;">Tax total</td>
+                  <td class="num">${taxDisplay === null ? "&mdash;" : escapeHtml(taxDisplay)}</td>
+                </tr>
+                <tr class="total-row">
+                  <td colspan="3" style="text-align: right;">Total</td>
+                  <td class="num">${totalDisplay === null ? "&mdash;" : escapeHtml(totalDisplay)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        `;
+      }
+
+      resultContainer.innerHTML = bannerHtml + metaHtml + itemsHtml;
+      emptyState.classList.add("hidden");
+      viewTabs.classList.remove("hidden");
+      copyBtn.classList.remove("hidden");
+      downloadBtn.classList.remove("hidden");
+      setTab(activeTab);
+    }
+
+    function renderError(status, detail, rawBody) {
+      lastResult = rawBody;
+      jsonContainer.textContent = JSON.stringify(rawBody, null, 2);
+      resultContainer.innerHTML = `
+        <div class="banner err">
+          <div class="banner-header">
+            <span>Request Failed (HTTP ${escapeHtml(status)})</span>
+          </div>
+          <div class="banner-sub">${escapeHtml(detail)}</div>
+        </div>
+      `;
+      emptyState.classList.add("hidden");
+      viewTabs.classList.remove("hidden");
+      copyBtn.classList.remove("hidden");
+      downloadBtn.classList.add("hidden");
+      setTab("structured");
+    }
+
+    async function runExtraction() {
+      if (!currentFile) return;
+
+      extractBtn.disabled = true;
+      emptyState.classList.add("hidden");
+      resultContainer.classList.add("hidden");
+      jsonContainer.classList.add("hidden");
+      loadingState.classList.add("visible");
+
+      const started = performance.now();
+      loadingText.textContent = "Extracting document… 0.0s";
+      timerHandle = setInterval(() => {
+        const secs = ((performance.now() - started) / 1000).toFixed(1);
+        loadingText.textContent = `Extracting document… ${secs}s`;
+      }, 100);
+
+      try {
+        const formData = new FormData();
+        formData.append("file", currentFile, currentFile.name);
+
+        const res = await fetch("/extract", {
+          method: "POST",
+          body: formData,
+        });
+        const elapsedSec = ((performance.now() - started) / 1000).toFixed(2);
+        const body = await res.json().catch(() => ({ detail: res.statusText || "Invalid response" }));
+
+        if (!res.ok) {
+          renderError(res.status, body.detail || "Extraction failed.", body);
+        } else {
+          renderSuccess(body, elapsedSec);
+        }
+      } catch (err) {
+        renderError("Network", err.message || "Could not reach the FastAPI server.", {
+          detail: err.message || "Network error",
+        });
+      } finally {
+        clearInterval(timerHandle);
+        loadingState.classList.remove("visible");
+        extractBtn.disabled = !currentFile;
+      }
+    }
+
+    // File input & drag-and-drop wiring
+    chooseBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+    changeFileBtn.addEventListener("click", () => fileInput.click());
+    clearBtn.addEventListener("click", clearSelection);
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files[0]) {
+        selectFile(fileInput.files[0]);
+      }
+    });
+
+    ["dragenter", "dragover"].forEach((evt) => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+      });
+    });
+    ["dragleave", "drop"].forEach((evt) => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+      });
+    });
+    dropzone.addEventListener("drop", (e) => {
+      const file = e.dataTransfer?.files?.[0];
+      if (file) selectFile(file);
+    });
+
+    extractBtn.addEventListener("click", runExtraction);
+    tabStructured.addEventListener("click", () => setTab("structured"));
+    tabJson.addEventListener("click", () => setTab("json"));
+
+    copyBtn.addEventListener("click", async () => {
+      if (!lastResult) return;
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+        copyBtn.textContent = "Copied";
+        setTimeout(() => (copyBtn.textContent = "Copy JSON"), 1400);
+      } catch {
+        copyBtn.textContent = "Copy failed";
+        setTimeout(() => (copyBtn.textContent = "Copy JSON"), 1400);
+      }
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (!lastResult || !currentFile) return;
+      const stem = currentFile.name.replace(/\.[^.]+$/, "");
+      const blob = new Blob([JSON.stringify(lastResult, null, 2) + "\n"], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${stem}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    checkHealth();
+  </script>
+</body>
+</html>
