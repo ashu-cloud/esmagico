@@ -1,0 +1,325 @@
+{
+  "timestamp": "2026-11-20T09:12:09.305147+00:00",
+  "source": "predictions:outputs",
+  "total_docs": 10,
+  "metrics": {
+    "is_invoice": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "vendor": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "invoice_number": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "invoice_date": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "currency": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "line_items_row_level": {
+      "correct": 66,
+      "total": 66,
+      "accuracy": 1.0
+    },
+    "line_items_document_exact": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "tax_total": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "total": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    },
+    "all_fields_correct_document": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0
+    }
+  },
+  "line_items_subfields": {
+    "description": {
+      "correct": 66,
+      "total": 66,
+      "accuracy": 1.0
+    },
+    "quantity": {
+      "correct": 66,
+      "total": 66,
+      "accuracy": 1.0
+    },
+    "amount": {
+      "correct": 66,
+      "total": 66,
+      "accuracy": 1.0
+    },
+    "gt_rows": 66,
+    "pred_rows": 66
+  },
+  "validation_stats": {
+    "needs_review_docs": 0,
+    "flagged_wrong_docs": 0,
+    "unflagged_wrong_docs": 0,
+    "flagged_correct_docs": 0,
+    "string_number_failures": 0
+  },
+  "documents": [
+    {
+      "doc_id": "L01",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 4,
+        "total_rows": 4,
+        "gt_rows": 4,
+        "pred_rows": 4
+      }
+    },
+    {
+      "doc_id": "L02",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 6,
+        "total_rows": 6,
+        "gt_rows": 6,
+        "pred_rows": 6
+      }
+    },
+    {
+      "doc_id": "L03",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 4,
+        "total_rows": 4,
+        "gt_rows": 4,
+        "pred_rows": 4
+      }
+    },
+    {
+      "doc_id": "L04",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 24,
+        "total_rows": 24,
+        "gt_rows": 24,
+        "pred_rows": 24
+      }
+    },
+    {
+      "doc_id": "L05",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 10,
+        "total_rows": 10,
+        "gt_rows": 10,
+        "pred_rows": 10
+      }
+    },
+    {
+      "doc_id": "L06",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 4,
+        "total_rows": 4,
+        "gt_rows": 4,
+        "pred_rows": 4
+      }
+    },
+    {
+      "doc_id": "L07",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 4,
+        "total_rows": 4,
+        "gt_rows": 4,
+        "pred_rows": 4
+      }
+    },
+    {
+      "doc_id": "L08",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 0,
+        "total_rows": 0,
+        "gt_rows": 0,
+        "pred_rows": 0
+      }
+    },
+    {
+      "doc_id": "L09",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 5,
+        "total_rows": 5,
+        "gt_rows": 5,
+        "pred_rows": 5
+      }
+    },
+    {
+      "doc_id": "L10",
+      "all_fields_correct": true,
+      "needs_review": false,
+      "review_reasons": [],
+      "string_number_failures": 0,
+      "field_matches": {
+        "is_invoice": true,
+        "vendor": true,
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "line_items": true,
+        "tax_total": true,
+        "total": true
+      },
+      "failed_fields": [],
+      "line_items": {
+        "correct_rows": 5,
+        "total_rows": 5,
+        "gt_rows": 5,
+        "pred_rows": 5
+      }
+    }
+  ]
+}
