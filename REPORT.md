@@ -1,6 +1,14 @@
 # Invoice Extraction Pipeline — Evaluation & Cost Report
 
-All numbers below come from real runs executed against the sample pack (`L01`–`L10` labelled, `U01`–`U10` unlabelled) on **2026-11-20**. No confidential document text, vendor names, or invoice numbers from the sample pack are copied into this report.
+## Summary
+
+- **Clean labelled set (`L01`–`L10`)**: **10/10 (100.0%)** exact documents and `66/66` line items (development-set result — prompt rules were written after inspecting all 20 sample documents).
+- **Degraded robustness (`seed=42`, 5 degradations)**: **48/50 (96.0%)** exact documents and `329/330` line items across outage-free runs (`1` blur quantity misread, `1` physical edge-crop vendor error).
+- **Review-flag check (`needs_review`, excluding `503` outages)**: **0 of 2 (0.0%)** real degraded extraction errors flagged (`0` false alarms), exposing the blind spot of arithmetic-only validation.
+- **Cost per document**: **\$0.001292/doc** (`1,713.2` input / `311.2` output tokens avg; **\$1.29 per 1,000 invoices** at `gemini-3.5-flash-lite` paid list price).
+- **Top fix**: add jittered backoff + fallback model (`gemini-3.1-flash-lite`) for `503` spikes, plus lightweight blur/border-crop and `quantity × unit_price` checks to catch non-arithmetic errors.
+
+All numbers below come from real runs executed against the sample pack (`L01`–`L10` labelled, `U01`–`U10` unlabelled) on **2026-11-20** and manual visual verification of `U01`–`U10` on **2026-11-21**. No confidential vendor names, invoice numbers, or amounts from the sample pack are copied into this report.
 
 ---
 
@@ -56,7 +64,7 @@ All numbers below come from real runs executed against the sample pack (`L01`–
 3. **Short retry window (`API_MAX_RETRIES=2`, `API_BACKOFF_BASE_SECONDS=1.0`, ~3s total wait) during sustained `HTTP 503` spikes**:
    - *Expected*: 2 quick retries would ride out transient `503 UNAVAILABLE` responses during bulk robustness testing.
    - *What happened*: Under real Gemini capacity spikes, 6 of 50 degraded documents and 6 of 30 stability runs hit 3 consecutive `503`s within ~30s and failed.
-   - *What I did instead*: Exposed `API_BACKOFF_BASE_SECONDS` alongside `API_MAX_RETRIES` as configuration and re-ran the affected subsets with `API_MAX_RETRIES=5` and `API_BACKOFF_BASE_SECONDS=2.0` (`2s, 4s, 8s, 16s, 32s` backoff), reducing degraded outage failures from `6` to `0` and stability outage failures from `6` to `2` without touching the prompt or validation logic.
+   - *What I did instead*: Exposed `API_BACKOFF_BASE_SECONDS` alongside `API_MAX_RETRIES` as configuration and re-ran the affected subsets with `API_MAX_RETRIES=5` and `API_BACKOFF_BASE_SECONDS=2.0` (`2s, 4s, 8s, 16s, 32s` backoff), reducing degraded outage failures from `6` to `0` and stability outage failures from `6` to `2` without touching the prompt or validation logic (logged in Section 2's Tuning log).
 
 ---
 
@@ -92,12 +100,15 @@ python robustness_eval.py --seed 42 --stability-runs 3
 ```
 
 ### Overfitting statement
-- **Zero prompt or validation-rule tuning was performed using the labelled documents or the robustness results.** The system prompt (`invoice_extractor/prompt.py`), validator (`invoice_extractor/validator.py`), and evaluator (`invoice_extractor/evaluator.py`) were written once from the sample pack conventions and were never modified after viewing any evaluation results.
+- The prompt rules were written after the whole sample pack, including the unlabelled documents, had been inspected to anticipate patterns such as number formats and ambiguous dates. The clean 10/10 should therefore be read as a development-set result, not an independent test.
+- No changes were made to the prompt (`invoice_extractor/prompt.py`), validator (`invoice_extractor/validator.py`), or evaluator (`invoice_extractor/evaluator.py`) after viewing any evaluation or robustness results. One transport-only configuration change was made after seeing `503` outages in the robustness and stability runs, disclosed below.
 
 #### Tuning log
-| # | Change | Why | Looked at which labelled results first? | Effect on accuracy |
+| # | Change | Why | Looked at which results first? | Effect on accuracy |
 |---|---|---|---|---|
-| — | *(None — no post-eval prompt or validation tuning performed)* | Kept evaluation completely uncontaminated | None | N/A |
+| 1 | Raised `API_MAX_RETRIES` from `2` to `5` and `API_BACKOFF_BASE_SECONDS` from `1.0` to `2.0` (environment config only) | Saw `503` outage failures in the robustness and stability runs (`6/50` degraded docs and `6/30` clean stability runs) | Robustness Run 1 & Stability Run 1 (`20261120T154656Z`) | Transport-only; no effect on extraction logic. Re-ran `jpeg_compression`, `partial_crop`, and 3× clean stability; outages dropped `6 → 0` (degraded) and `6 → 2` (stability), and the later run is the one reported in the combined 50-doc totals. |
+
+*Disclosure note*: Raised `API_MAX_RETRIES` from 2 to 5 and `API_BACKOFF_BASE_SECONDS` from 1.0 to 2.0 after seeing `503` outage failures in the robustness and stability runs. Transport-only; no effect on extraction logic. The two affected degradation sets were re-run, and the later run is the one reported (both Run 1 and Run 2 files are preserved in `eval_results/`).
 
 ---
 
@@ -120,11 +131,26 @@ Baseline (`baselines/phase2_raw`, `eval_results/eval_20261120T090504Z.json`) vs.
 | All fields correct (document) | 10 / 10 (100.0%) | 10 / 10 (100.0%) |
 
 - **Line-item sub-fields (both Baseline and Final)**: `description` 66/66 (100.0%), `quantity` 66/66 (100.0%), `amount` 66/66 (100.0%), predicted rows = 66, ground-truth rows = 66, string-number schema failures = 0.
-- **Unlabelled set (`U01`–`U10`) validation check (`outputs/`)**: all 10 passed strict schema validation (`8` invoices with `0.00` arithmetic discrepancy and `2` non-invoices `U06`, `U10` with `is_invoice: false` and all nulls; `0/10` flagged `needs_review`). Ground truth is withheld by the reviewer, so non-numeric accuracy on `U01`–`U10` is not claimed.
-- **Caveat**: 10 documents is a very small sample — one document equals 10 percentage points.
+- **Caveat**: 10 documents is a very small sample (one document = 10 percentage points), and as noted in Section 2, this is a development-set score rather than an independent holdout test.
 
-### 3.2 Degraded-image robustness evaluation (`seed=42`, `L01`–`L10`)
-Because the clean 10-document set showed 0 errors, we stress-tested the untouched pipeline on 5 reproducible degradations (`generate_degraded.py --seed 42`, stored in git-ignored `degraded_samples/`) scored with the untouched main evaluator.
+### 3.2 Manual verification of the unlabelled set (`U01`–`U10`)
+Each unlabelled document (`U01`–`U10`) was opened visually side-by-side against `outputs/U01.json`–`U10.json` and hand-checked across `is_invoice`, `vendor`, `invoice_number`, `invoice_date`, `currency`, `line_items`, `tax_total`, and `total`:
+
+| Doc | Document Type / Notable Trait | `is_invoice` | Schema & Arith (`0.00`) | Manual Check (`vendor`, `invoice_number`, `invoice_date`, `currency`, items & totals) |
+|---|---|---|---|---|
+| `U01` | Digital PDF, 3 split tax lines | `true` | Pass | All fields match printed document (3 tax lines summed accurately) |
+| `U02` | Tilted phone photo (JPG), `MM/DD/YYYY` | `true` | Pass | All fields match printed document (issue date chosen over due date & PO ref) |
+| `U03` | Digital PDF, no tax line, ALL-CAPS header | `true` | Pass | All fields match printed document (`tax_total=0.0`; header casing preserved as printed) |
+| `U04` | Digital PDF, cross-border buyer, zero tax | `true` | Pass | All fields match printed document (printed currency used, not buyer's country) |
+| `U05` | 90°-rotated scanned PDF (no text layer) | `true` | Pass | All fields match printed document despite sideways scan |
+| `U06` | Bank statement referencing invoice numbers | `false` | Pass | Correctly classified non-invoice; all other fields `null` |
+| `U07` | Non-English (German) PDF, comma decimals | `true` | Pass | All fields match printed document (`DD.MM.YYYY` & European numbers normalized) |
+| `U08` | European PDF (`B.V.`), 2 split VAT lines | `true` | Pass | All fields match printed document (both VAT lines summed; comma decimals normalized) |
+| `U09` | Digital PDF, ambiguous date & surcharge row | `true` | Pass | All fields match printed document (date order resolved via due date; surcharge `quantity=null`) |
+| `U10` | Cover letter mentioning an expected stipend | `false` | Pass | Correctly classified non-invoice; all other fields `null` |
+
+### 3.3 Degraded-image robustness evaluation (`seed=42`, `L01`–`L10`)
+To probe failure modes beyond the clean development set, we tested the untouched pipeline on 5 reproducible degradations (`generate_degraded.py --seed 42`, stored in git-ignored `degraded_samples/`) scored with the untouched main evaluator.
 
 Two runs were executed with different transport retry configs (zero prompt/validator/evaluator changes):
 - **Run 1** (`eval_results/robustness_20261120T154656Z.json`): `API_MAX_RETRIES=2`, `API_BACKOFF_BASE_SECONDS=1.0` (all 5 degradations; Gemini experienced intermittent `HTTP 503 UNAVAILABLE` spikes, `0` rate-limit `429`s).
@@ -142,7 +168,7 @@ Two runs were executed with different transport retry configs (zero prompt/valid
 
 Across all 50 outage-free degraded evaluations (Run 1 `blur`/`rotation`/`low_resolution` + Run 2 `jpeg_compression`/`partial_crop`): **48 / 50 documents exact (96.0%)** and **329 / 330 line-item rows exact (99.7%)**.
 
-### 3.3 Clean 3-run stability evaluation (`L01`–`L10` repeated 3×)
+### 3.4 Clean 3-run stability evaluation (`L01`–`L10` repeated 3×)
 
 | Experiment | Retry Config | Per-Run End-to-End Exact | Total End-to-End | Outage-Exhausted (`503`) | Conditional Exact (API OK) | Field Diffs Across Successful Runs |
 |---|---|---|---:|---:|---:|---:|
@@ -183,13 +209,13 @@ Across all 50 outage-free degraded evaluations (Run 1 `blur`/`rotation`/`low_res
    - *Model error or eval artefact?*: Physical input-quality failure (unrecoverable from pixels alone; also unflagged because a clipped string still passes schema and arithmetic checks).
 
 4. **Raw casing variance (non-error under eval rules)**
-   - *Frequency*: 3 clean docs (`L05`, `L07`, `L09`) had all-caps printed vendor headers vs. title-case ground truth (7/10 clean docs matched byte-for-byte). Properly normalized by the evaluator's case-insensitive vendor rule.
+   - *Frequency*: 3 clean labelled docs (`L05`, `L07`, `L09`) and 1 unlabelled doc (`U03`) had all-caps printed vendor headers vs. title-case ground truth (7/10 clean labelled docs matched byte-for-byte). Properly normalized by the evaluator's case-insensitive vendor rule.
 
 ### What I would fix first (ranked by errors removed per effort)
 1. **Increase default backoff window + add jitter & secondary model fallback (`gemini-3.1-flash-lite`)**: Config-only tuning (`retries=5, base=2s`) already eliminated 100% of degraded outages (`6 → 0`) and 67% of stability outages (`6 → 2`). Adding jitter and falling back to `gemini-3.1-flash-lite` after persistent `503`s removes the remaining `L04` outage risk with minimal code.
 2. **Pre-extraction image-quality gate (blur & border-clipping check)**: A few lines of Pillow/NumPy checking sharpness (Laplacian variance) and non-white ink touching the image border would catch both `blur/L09`-class blurry scans and `partial_crop/L05`-class clipped headers and raise `needs_review: true` immediately.
 3. **Quantity × unit-price cross-check (when unit price is printed)**: Adding an optional internal consistency check catches silent `quantity` misreads like `blur/L09` (`18 → 20.0`) that row-amount summation cannot detect.
-4. **Expand the labelled benchmark (50–100+ real-world noisy invoices)**: Needed before tuning prompts or thresholds further so improvements generalize beyond 10 synthetic documents.
+4. **Expand the labelled benchmark (50–100+ real-world noisy invoices)**: Needed before tuning prompts or thresholds further so improvements generalize beyond a 20-document development pack.
 
 ---
 
@@ -241,8 +267,7 @@ Measured from the final 20-document run ([logs/final_run_tokens.jsonl](logs/fina
 ## 7. Limitations and next steps
 
 ### What is not handled
-- **Unlabelled ground truth**: `U01`–`U10` have no ground-truth labels; while all 10 passed schema, non-invoice, and exact `0.00` arithmetic validation, non-numeric fields (`vendor`, `invoice_number`, `invoice_date`, `currency`, `description`) on `U01`–`U10` were not verified against ground truth.
-- **Small labelled evaluation set**: Only 10 labelled documents exist, so statistical confidence is low and subtle real-world edge cases are under-represented.
+- **No independent holdout set**: The prompt rules were designed after inspecting all 20 sample documents, and formal ground truth is only available on 10 of them (`L01`–`L10`). For `U01`–`U10`, all 10 outputs were manually hand-verified against their source PDFs/JPG across `is_invoice`, `vendor`, `invoice_number`, `invoice_date`, `currency`, `line_items`, `tax_total`, and `total` (all 10 matched by eye, including non-invoices `U06` and `U10`), though official reviewer ground-truth JSONs remain withheld.
 - **Non-arithmetic silent errors**: As demonstrated by `blur/L09` (quantity) and `partial_crop/L05` (clipped vendor), arithmetic validation alone cannot flag errors that leave row amounts and totals intact.
 - **Upstream `503` availability on large multi-page PDFs**: Under heavy Gemini demand, 2-page `L04` still exhausted 6 attempts in 2 of 3 stability runs without a secondary fallback model.
 - **Additional file formats & edge cases**: Password-protected/encrypted PDFs, multi-document PDFs (multiple invoices merged into one file), HEIC/TIFF/WebP/DOCX files, and credit notes with negative totals are not explicitly handled.
@@ -251,5 +276,5 @@ Measured from the final 20-document run ([logs/final_run_tokens.jsonl](logs/fina
 ### What I would do with more time
 1. Add jittered backoff plus automatic fallback to `gemini-3.1-flash-lite` (\$0.25/\$1.50 per 1M) when `gemini-3.5-flash-lite` returns sustained `503`s.
 2. Add lightweight image-quality pre-checks (sharpness/blur score + border-crop detection) and optional `quantity × unit_price` cross-checks to raise review-flag recall on non-arithmetic errors.
-3. Expand the labelled benchmark to 50–100+ real-world invoices (crumpled receipts, multi-currency credit notes, 5+ page tables) and run a side-by-side accuracy/cost comparison with `gemini-3.1-flash-lite` and an open-weight vision model.
+3. Expand the labelled benchmark to 50–100+ unseen real-world invoices (crumpled receipts, multi-currency credit notes, 5+ page tables) and run a side-by-side accuracy/cost comparison with `gemini-3.1-flash-lite` and an open-weight vision model.
 4. Add authentication, rate limiting, and background job queues for multi-file batch uploads via the web UI.
