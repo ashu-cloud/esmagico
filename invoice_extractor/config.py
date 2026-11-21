@@ -19,6 +19,7 @@ DEFAULT_SAMPLE_PACK_DIR = "Sample Pack"
 DEFAULT_MAX_UPLOAD_SIZE_MB = 20
 DEFAULT_API_TIMEOUT_SECONDS = 45.0
 DEFAULT_API_MAX_RETRIES = 2
+DEFAULT_API_BACKOFF_BASE_SECONDS = 1.0
 _PLACEHOLDER_API_KEY = "your_gemini_api_key_here"
 
 
@@ -86,7 +87,7 @@ def get_max_upload_size_bytes() -> int:
 
 
 def get_api_timeout_seconds() -> float:
-    """Return the upstream Gemini API request timeout in seconds (D7)."""
+    """Return the upstream Gemini API request timeout in seconds."""
     raw = os.getenv("API_TIMEOUT_SECONDS", str(DEFAULT_API_TIMEOUT_SECONDS)).strip()
     try:
         value = float(raw)
@@ -98,7 +99,7 @@ def get_api_timeout_seconds() -> float:
 
 
 def get_api_max_retries() -> int:
-    """Return max transient API retries with exponential backoff (D7)."""
+    """Return max transient API retries with exponential backoff."""
     raw = os.getenv("API_MAX_RETRIES", str(DEFAULT_API_MAX_RETRIES)).strip()
     try:
         value = int(raw)
@@ -106,4 +107,20 @@ def get_api_max_retries() -> int:
         raise ValueError(f"API_MAX_RETRIES must be an integer, got: {raw!r}") from exc
     if value < 0:
         raise ValueError("API_MAX_RETRIES cannot be negative.")
+    return value
+
+
+def get_api_backoff_base_seconds() -> float:
+    """Return base delay (seconds) for exponential backoff on transient API errors."""
+    raw = os.getenv(
+        "API_BACKOFF_BASE_SECONDS", str(DEFAULT_API_BACKOFF_BASE_SECONDS)
+    ).strip()
+    try:
+        value = float(raw)
+    except ValueError as exc:
+        raise ValueError(
+            f"API_BACKOFF_BASE_SECONDS must be a number, got: {raw!r}"
+        ) from exc
+    if value < 0:
+        raise ValueError("API_BACKOFF_BASE_SECONDS cannot be negative.")
     return value

@@ -1,4 +1,4 @@
-"""Post-extraction schema and arithmetic validation (FR2, D5, D6)."""
+"""Post-extraction schema and arithmetic validation."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from invoice_extractor.models import InvoiceExtraction
 
-# Decision D6: absolute tolerance in the document's own currency.
+# Absolute arithmetic tolerance in the document's own currency for rounding differences.
 ARITHMETIC_TOLERANCE = 0.05
 
 REVIEW_METADATA_KEYS = ("needs_review", "review_reasons")
@@ -30,9 +30,9 @@ class ValidationOutcome:
 class ExtractionResult:
     """Final extraction output pairing schema fields with review metadata.
 
-    Per 01_SPEC.md Section 5, `needs_review` and `review_reasons` are kept
-    separate from the schema-checked invoice fields; removing those two keys
-    yields an object that validates directly against schema.json.
+    `needs_review` and `review_reasons` are kept separate from the
+    schema-checked invoice fields; removing those two keys yields an object
+    that validates directly against schema.json.
     """
 
     data: dict[str, Any]
@@ -89,7 +89,7 @@ def validate_extraction(
     *,
     tolerance: float = ARITHMETIC_TOLERANCE,
 ) -> ValidationOutcome:
-    """Run strict schema validation followed by the D6 arithmetic check."""
+    """Run strict schema validation followed by the arithmetic check."""
     if isinstance(raw_output, str):
         try:
             raw_dict = json.loads(raw_output)
@@ -120,7 +120,7 @@ def validate_extraction(
 
     reasons: list[str] = []
 
-    # 1. Reject string-encoded numbers explicitly (04_EVAL_RULES.md).
+    # 1. Reject string-encoded numbers explicitly so they never silently pass.
     reasons.extend(_find_string_number_errors(raw_dict))
 
     # 2. Local Pydantic schema validation (types, patterns, extra='forbid', non-invoice null rule).

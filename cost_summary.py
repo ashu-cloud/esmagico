@@ -1,4 +1,4 @@
-"""CLI to summarize token usage and USD cost per document from a JSONL log (Phase 6).
+"""CLI to summarize token usage and USD cost per document from a JSONL log.
 
 Usage:
     python cost_summary.py logs/final_run_tokens.jsonl

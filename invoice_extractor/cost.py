@@ -1,4 +1,4 @@
-"""Token usage and USD cost analysis from JSONL token logs (FR6, Phase 6)."""
+"""Token usage and USD cost analysis from JSONL token logs."""
 
 from __future__ import annotations
 

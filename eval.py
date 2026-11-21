@@ -1,4 +1,4 @@
-"""CLI evaluation harness for the 10 labelled sample documents (FR4, 04_EVAL_RULES.md).
+"""CLI evaluation harness for the 10 labelled sample documents.
 
 Calls extract_invoice() directly (never through HTTP) when running live, or
 evaluates pre-saved prediction JSONs when --predictions-dir is given.

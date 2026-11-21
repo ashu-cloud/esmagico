@@ -2,9 +2,9 @@
 
 Handles:
 - Page-image loading (PDF pages -> PNG, JPG/PNG -> EXIF-corrected image)
-- Gemini structured output with configurable timeout & exponential backoff (D7)
-- Schema + arithmetic validation, single error-feedback retry, and review flagging (D5, D6)
-- Token logging for every API call including retries (FR6)
+- Gemini structured output with configurable timeout & exponential backoff
+- Schema + arithmetic validation, single error-feedback retry, and review flagging
+- Token logging for every API call including retries
 """
 
 from __future__ import annotations
@@ -20,6 +20,7 @@ from google.genai import errors as genai_errors
 from google.genai import types
 
 from invoice_extractor.config import (
+    get_api_backoff_base_seconds,
     get_api_max_retries,
     get_api_timeout_seconds,
     get_gemini_api_key,
@@ -35,7 +36,7 @@ from invoice_extractor.validator import (
     validate_extraction,
 )
 
-# Transient HTTP status codes worth retrying with exponential backoff (D7).
+# Transient HTTP status codes worth retrying with exponential backoff.
 TRANSIENT_HTTP_CODES = {429, 500, 502, 503, 504}
 DEFAULT_BACKOFF_BASE_SECONDS = 1.0
 
@@ -174,7 +175,7 @@ def _call_with_backoff(
     backoff_base_seconds: float,
     log_file: str | Path | None,
 ) -> ModelCallResult:
-    """Call the upstream model with timeout and bounded exponential backoff (D7)."""
+    """Call the upstream model with timeout and bounded exponential backoff."""
     last_exc: Exception | None = None
 
     for transport_try in range(max_api_retries + 1):
@@ -266,7 +267,7 @@ def extract_invoice(
     tolerance: float = ARITHMETIC_TOLERANCE,
     timeout_seconds: float | None = None,
     max_api_retries: int | None = None,
-    backoff_base_seconds: float = DEFAULT_BACKOFF_BASE_SECONDS,
+    backoff_base_seconds: float | None = None,
     call_model_fn: ModelCaller | None = None,
 ) -> ExtractionResult:
     """Extract, validate, retry once on failure, and flag if still invalid.
@@ -283,6 +284,11 @@ def extract_invoice(
     api_retries = (
         max_api_retries if max_api_retries is not None else get_api_max_retries()
     )
+    backoff_base = (
+        backoff_base_seconds
+        if backoff_base_seconds is not None
+        else get_api_backoff_base_seconds()
+    )
     caller = call_model_fn or _default_gemini_caller
 
     pages = load_document_images(path)
@@ -297,7 +303,7 @@ def extract_invoice(
         validation_attempt=1,
         timeout_seconds=req_timeout,
         max_api_retries=api_retries,
-        backoff_base_seconds=backoff_base_seconds,
+        backoff_base_seconds=backoff_base,
         log_file=log_file,
     )
     first_check = validate_extraction(first_call.text, tolerance=tolerance)
@@ -308,7 +314,7 @@ def extract_invoice(
             review_reasons=[],
         )
 
-    # Attempt 2 (D5): retry ONCE feeding back the specific validation failures.
+    # Attempt 2: retry ONCE feeding back the specific validation failures.
     retry_prompt = build_retry_prompt(first_call.text, first_check.reasons)
     second_call = _call_with_backoff(
         caller=caller,
@@ -319,7 +325,7 @@ def extract_invoice(
         validation_attempt=2,
         timeout_seconds=req_timeout,
         max_api_retries=api_retries,
-        backoff_base_seconds=backoff_base_seconds,
+        backoff_base_seconds=backoff_base,
         log_file=log_file,
     )
     second_check = validate_extraction(second_call.text, tolerance=tolerance)

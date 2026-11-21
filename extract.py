@@ -1,4 +1,4 @@
-"""Thin CLI wrapper for single-document invoice extraction (secondary interface, D9).
+"""Thin CLI wrapper for single-document invoice extraction (secondary interface).
 
 Usage:
     python extract.py <file> [--model MODEL] [--log-file PATH]

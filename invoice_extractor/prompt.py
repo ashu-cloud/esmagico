@@ -1,4 +1,4 @@
-"""System prompt for invoice extraction (Decision D8)."""
+"""System prompt and validation-retry prompt for invoice extraction."""
 
 SYSTEM_PROMPT = """\
 You are an accurate document data extractor. Analyze the provided document page image(s) and return a single JSON object that strictly follows the response schema.

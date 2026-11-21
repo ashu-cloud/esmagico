@@ -1,4 +1,4 @@
-"""FastAPI service exposing the invoice extraction pipeline (primary interface, D9).
+"""FastAPI service exposing the invoice extraction pipeline (primary interface).
 
 Run locally:
     uvicorn api:app --reload

@@ -1,4 +1,4 @@
-"""Field-by-field evaluation harness implementing 04_EVAL_RULES.md."""
+"""Field-by-field evaluation harness for labelled invoice documents."""
 
 from __future__ import annotations
 
@@ -183,7 +183,7 @@ def _evaluate_line_items(
     expected: Any,
     actual: Any,
 ) -> tuple[bool, LineItemStats, int, list[FieldError]]:
-    """Compare line_items in printed order per 04_EVAL_RULES.md."""
+    """Compare line_items in printed order."""
     errors: list[FieldError] = []
     string_failures = 0
 
@@ -475,7 +475,7 @@ def _pct(num: int, den: int) -> str:
 
 
 def format_results_table(summary: EvalSummary) -> str:
-    """Format the per-field accuracy table and extra stats from 04_EVAL_RULES.md."""
+    """Format the per-field accuracy table and validation/review-flag stats."""
     n = summary.total_docs
     li = summary.line_item_stats
 

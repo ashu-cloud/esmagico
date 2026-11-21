@@ -1,4 +1,4 @@
-"""Append-only JSONL logger for model token usage (FR6)."""
+"""Append-only JSONL logger for model token usage."""
 
 from __future__ import annotations
 
