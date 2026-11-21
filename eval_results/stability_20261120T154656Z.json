@@ -1,0 +1,1252 @@
+{
+  "timestamp": "2026-11-20T15:46:56.244057+00:00",
+  "model": "gemini-3.5-flash-lite",
+  "num_runs": 3,
+  "token_log": "logs\\stability_20261120T154656Z.jsonl",
+  "runs": [
+    {
+      "timestamp": "2026-11-20T15:46:56.244057+00:00",
+      "source": "clean_stability_run_1:gemini-3.5-flash-lite",
+      "total_docs": 10,
+      "metrics": {
+        "is_invoice": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "vendor": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "invoice_number": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "invoice_date": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "currency": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "line_items_row_level": {
+          "correct": 23,
+          "total": 66,
+          "accuracy": 0.3485
+        },
+        "line_items_document_exact": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "tax_total": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "total": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        },
+        "all_fields_correct_document": {
+          "correct": 6,
+          "total": 10,
+          "accuracy": 0.6
+        }
+      },
+      "line_items_subfields": {
+        "description": {
+          "correct": 23,
+          "total": 66,
+          "accuracy": 0.3485
+        },
+        "quantity": {
+          "correct": 23,
+          "total": 66,
+          "accuracy": 0.3485
+        },
+        "amount": {
+          "correct": 23,
+          "total": 66,
+          "accuracy": 0.3485
+        },
+        "gt_rows": 66,
+        "pred_rows": 23
+      },
+      "validation_stats": {
+        "needs_review_docs": 4,
+        "flagged_wrong_docs": 4,
+        "unflagged_wrong_docs": 0,
+        "flagged_correct_docs": 0,
+        "string_number_failures": 0
+      },
+      "documents": [
+        {
+          "doc_id": "L01",
+          "all_fields_correct": false,
+          "needs_review": true,
+          "review_reasons": [
+            "Extraction error: ProviderError: Vision provider request failed with HTTP 503."
+          ],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": false,
+            "vendor": false,
+            "invoice_number": false,
+            "invoice_date": false,
+            "currency": false,
+            "line_items": false,
+            "tax_total": false,
+            "total": false
+          },
+          "failed_fields": [
+            "is_invoice",
+            "vendor",
+            "invoice_number",
+            "invoice_date",
+            "currency",
+            "line_items",
+            "tax_total",
+            "total"
+          ],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L02",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 6,
+            "total_rows": 6,
+            "gt_rows": 6,
+            "pred_rows": 6
+          }
+        },
+        {
+          "doc_id": "L03",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L04",
+          "all_fields_correct": false,
+          "needs_review": true,
+          "review_reasons": [
+            "Extraction error: ProviderError: Vision provider request failed with HTTP 503."
+          ],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": false,
+            "vendor": false,
+            "invoice_number": false,
+            "invoice_date": false,
+            "currency": false,
+            "line_items": false,
+            "tax_total": false,
+            "total": false
+          },
+          "failed_fields": [
+            "is_invoice",
+            "vendor",
+            "invoice_number",
+            "invoice_date",
+            "currency",
+            "line_items",
+            "tax_total",
+            "total"
+          ],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 24,
+            "gt_rows": 24,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L05",
+          "all_fields_correct": false,
+          "needs_review": true,
+          "review_reasons": [
+            "Extraction error: ProviderError: Vision provider request failed with HTTP 503."
+          ],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": false,
+            "vendor": false,
+            "invoice_number": false,
+            "invoice_date": false,
+            "currency": false,
+            "line_items": false,
+            "tax_total": false,
+            "total": false
+          },
+          "failed_fields": [
+            "is_invoice",
+            "vendor",
+            "invoice_number",
+            "invoice_date",
+            "currency",
+            "line_items",
+            "tax_total",
+            "total"
+          ],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 10,
+            "gt_rows": 10,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L06",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L07",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L08",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 0,
+            "gt_rows": 0,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L09",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 5,
+            "total_rows": 5,
+            "gt_rows": 5,
+            "pred_rows": 5
+          }
+        },
+        {
+          "doc_id": "L10",
+          "all_fields_correct": false,
+          "needs_review": true,
+          "review_reasons": [
+            "Extraction error: ProviderError: Vision provider request failed with HTTP 503."
+          ],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": false,
+            "vendor": false,
+            "invoice_number": false,
+            "invoice_date": false,
+            "currency": false,
+            "line_items": false,
+            "tax_total": false,
+            "total": false
+          },
+          "failed_fields": [
+            "is_invoice",
+            "vendor",
+            "invoice_number",
+            "invoice_date",
+            "currency",
+            "line_items",
+            "tax_total",
+            "total"
+          ],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 5,
+            "gt_rows": 5,
+            "pred_rows": 0
+          }
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-11-20T15:46:56.244057+00:00",
+      "source": "clean_stability_run_2:gemini-3.5-flash-lite",
+      "total_docs": 10,
+      "metrics": {
+        "is_invoice": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "vendor": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "invoice_number": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "invoice_date": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "currency": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "line_items_row_level": {
+          "correct": 66,
+          "total": 66,
+          "accuracy": 1.0
+        },
+        "line_items_document_exact": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "tax_total": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "total": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        },
+        "all_fields_correct_document": {
+          "correct": 10,
+          "total": 10,
+          "accuracy": 1.0
+        }
+      },
+      "line_items_subfields": {
+        "description": {
+          "correct": 66,
+          "total": 66,
+          "accuracy": 1.0
+        },
+        "quantity": {
+          "correct": 66,
+          "total": 66,
+          "accuracy": 1.0
+        },
+        "amount": {
+          "correct": 66,
+          "total": 66,
+          "accuracy": 1.0
+        },
+        "gt_rows": 66,
+        "pred_rows": 66
+      },
+      "validation_stats": {
+        "needs_review_docs": 0,
+        "flagged_wrong_docs": 0,
+        "unflagged_wrong_docs": 0,
+        "flagged_correct_docs": 0,
+        "string_number_failures": 0
+      },
+      "documents": [
+        {
+          "doc_id": "L01",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L02",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 6,
+            "total_rows": 6,
+            "gt_rows": 6,
+            "pred_rows": 6
+          }
+        },
+        {
+          "doc_id": "L03",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L04",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 24,
+            "total_rows": 24,
+            "gt_rows": 24,
+            "pred_rows": 24
+          }
+        },
+        {
+          "doc_id": "L05",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 10,
+            "total_rows": 10,
+            "gt_rows": 10,
+            "pred_rows": 10
+          }
+        },
+        {
+          "doc_id": "L06",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L07",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L08",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 0,
+            "gt_rows": 0,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L09",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 5,
+            "total_rows": 5,
+            "gt_rows": 5,
+            "pred_rows": 5
+          }
+        },
+        {
+          "doc_id": "L10",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 5,
+            "total_rows": 5,
+            "gt_rows": 5,
+            "pred_rows": 5
+          }
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-11-20T15:46:56.244057+00:00",
+      "source": "clean_stability_run_3:gemini-3.5-flash-lite",
+      "total_docs": 10,
+      "metrics": {
+        "is_invoice": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "vendor": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "invoice_number": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "invoice_date": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "currency": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "line_items_row_level": {
+          "correct": 38,
+          "total": 66,
+          "accuracy": 0.5758
+        },
+        "line_items_document_exact": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "tax_total": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "total": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        },
+        "all_fields_correct_document": {
+          "correct": 8,
+          "total": 10,
+          "accuracy": 0.8
+        }
+      },
+      "line_items_subfields": {
+        "description": {
+          "correct": 38,
+          "total": 66,
+          "accuracy": 0.5758
+        },
+        "quantity": {
+          "correct": 38,
+          "total": 66,
+          "accuracy": 0.5758
+        },
+        "amount": {
+          "correct": 38,
+          "total": 66,
+          "accuracy": 0.5758
+        },
+        "gt_rows": 66,
+        "pred_rows": 38
+      },
+      "validation_stats": {
+        "needs_review_docs": 2,
+        "flagged_wrong_docs": 2,
+        "unflagged_wrong_docs": 0,
+        "flagged_correct_docs": 0,
+        "string_number_failures": 0
+      },
+      "documents": [
+        {
+          "doc_id": "L01",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L02",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 6,
+            "total_rows": 6,
+            "gt_rows": 6,
+            "pred_rows": 6
+          }
+        },
+        {
+          "doc_id": "L03",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L04",
+          "all_fields_correct": false,
+          "needs_review": true,
+          "review_reasons": [
+            "Extraction error: ProviderError: Vision provider request failed with HTTP 503."
+          ],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": false,
+            "vendor": false,
+            "invoice_number": false,
+            "invoice_date": false,
+            "currency": false,
+            "line_items": false,
+            "tax_total": false,
+            "total": false
+          },
+          "failed_fields": [
+            "is_invoice",
+            "vendor",
+            "invoice_number",
+            "invoice_date",
+            "currency",
+            "line_items",
+            "tax_total",
+            "total"
+          ],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 24,
+            "gt_rows": 24,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L05",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 10,
+            "total_rows": 10,
+            "gt_rows": 10,
+            "pred_rows": 10
+          }
+        },
+        {
+          "doc_id": "L06",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 4,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 4
+          }
+        },
+        {
+          "doc_id": "L07",
+          "all_fields_correct": false,
+          "needs_review": true,
+          "review_reasons": [
+            "Extraction error: ProviderError: Vision provider request failed with HTTP 503."
+          ],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": false,
+            "vendor": false,
+            "invoice_number": false,
+            "invoice_date": false,
+            "currency": false,
+            "line_items": false,
+            "tax_total": false,
+            "total": false
+          },
+          "failed_fields": [
+            "is_invoice",
+            "vendor",
+            "invoice_number",
+            "invoice_date",
+            "currency",
+            "line_items",
+            "tax_total",
+            "total"
+          ],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 4,
+            "gt_rows": 4,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L08",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 0,
+            "total_rows": 0,
+            "gt_rows": 0,
+            "pred_rows": 0
+          }
+        },
+        {
+          "doc_id": "L09",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 5,
+            "total_rows": 5,
+            "gt_rows": 5,
+            "pred_rows": 5
+          }
+        },
+        {
+          "doc_id": "L10",
+          "all_fields_correct": true,
+          "needs_review": false,
+          "review_reasons": [],
+          "string_number_failures": 0,
+          "field_matches": {
+            "is_invoice": true,
+            "vendor": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "currency": true,
+            "line_items": true,
+            "tax_total": true,
+            "total": true
+          },
+          "failed_fields": [],
+          "line_items": {
+            "correct_rows": 5,
+            "total_rows": 5,
+            "gt_rows": 5,
+            "pred_rows": 5
+          }
+        }
+      ]
+    }
+  ],
+  "total_field_diffs_across_runs": 50,
+  "differing_fields": [
+    {
+      "doc_id": "L01",
+      "field": "currency"
+    },
+    {
+      "doc_id": "L01",
+      "field": "invoice_date"
+    },
+    {
+      "doc_id": "L01",
+      "field": "invoice_number"
+    },
+    {
+      "doc_id": "L01",
+      "field": "is_invoice"
+    },
+    {
+      "doc_id": "L01",
+      "field": "line_items"
+    },
+    {
+      "doc_id": "L01",
+      "field": "needs_review"
+    },
+    {
+      "doc_id": "L01",
+      "field": "review_reasons"
+    },
+    {
+      "doc_id": "L01",
+      "field": "tax_total"
+    },
+    {
+      "doc_id": "L01",
+      "field": "total"
+    },
+    {
+      "doc_id": "L01",
+      "field": "vendor"
+    },
+    {
+      "doc_id": "L04",
+      "field": "currency"
+    },
+    {
+      "doc_id": "L04",
+      "field": "invoice_date"
+    },
+    {
+      "doc_id": "L04",
+      "field": "invoice_number"
+    },
+    {
+      "doc_id": "L04",
+      "field": "is_invoice"
+    },
+    {
+      "doc_id": "L04",
+      "field": "line_items"
+    },
+    {
+      "doc_id": "L04",
+      "field": "needs_review"
+    },
+    {
+      "doc_id": "L04",
+      "field": "review_reasons"
+    },
+    {
+      "doc_id": "L04",
+      "field": "tax_total"
+    },
+    {
+      "doc_id": "L04",
+      "field": "total"
+    },
+    {
+      "doc_id": "L04",
+      "field": "vendor"
+    },
+    {
+      "doc_id": "L05",
+      "field": "currency"
+    },
+    {
+      "doc_id": "L05",
+      "field": "invoice_date"
+    },
+    {
+      "doc_id": "L05",
+      "field": "invoice_number"
+    },
+    {
+      "doc_id": "L05",
+      "field": "is_invoice"
+    },
+    {
+      "doc_id": "L05",
+      "field": "line_items"
+    },
+    {
+      "doc_id": "L05",
+      "field": "needs_review"
+    },
+    {
+      "doc_id": "L05",
+      "field": "review_reasons"
+    },
+    {
+      "doc_id": "L05",
+      "field": "tax_total"
+    },
+    {
+      "doc_id": "L05",
+      "field": "total"
+    },
+    {
+      "doc_id": "L05",
+      "field": "vendor"
+    },
+    {
+      "doc_id": "L07",
+      "field": "currency"
+    },
+    {
+      "doc_id": "L07",
+      "field": "invoice_date"
+    },
+    {
+      "doc_id": "L07",
+      "field": "invoice_number"
+    },
+    {
+      "doc_id": "L07",
+      "field": "is_invoice"
+    },
+    {
+      "doc_id": "L07",
+      "field": "line_items"
+    },
+    {
+      "doc_id": "L07",
+      "field": "needs_review"
+    },
+    {
+      "doc_id": "L07",
+      "field": "review_reasons"
+    },
+    {
+      "doc_id": "L07",
+      "field": "tax_total"
+    },
+    {
+      "doc_id": "L07",
+      "field": "total"
+    },
+    {
+      "doc_id": "L07",
+      "field": "vendor"
+    },
+    {
+      "doc_id": "L10",
+      "field": "currency"
+    },
+    {
+      "doc_id": "L10",
+      "field": "invoice_date"
+    },
+    {
+      "doc_id": "L10",
+      "field": "invoice_number"
+    },
+    {
+      "doc_id": "L10",
+      "field": "is_invoice"
+    },
+    {
+      "doc_id": "L10",
+      "field": "line_items"
+    },
+    {
+      "doc_id": "L10",
+      "field": "needs_review"
+    },
+    {
+      "doc_id": "L10",
+      "field": "review_reasons"
+    },
+    {
+      "doc_id": "L10",
+      "field": "tax_total"
+    },
+    {
+      "doc_id": "L10",
+      "field": "total"
+    },
+    {
+      "doc_id": "L10",
+      "field": "vendor"
+    }
+  ]
+}

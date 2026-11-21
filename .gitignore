@@ -3,9 +3,10 @@
 .env.*
 !.env.example
 
-# Confidential sample documents (never commit)
+# Confidential sample documents and generated degraded copies (never commit)
 Sample Pack/
 sample_pack/
+degraded_samples/
 
 # Virtual environments
 .venv/

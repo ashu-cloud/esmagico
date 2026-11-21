@@ -2,7 +2,9 @@
 
 An LLM-based pipeline that reads invoice documents (digital PDFs, scanned PDFs, and JPG/PNG images) as page images and outputs validated, structured JSON using the Google Gemini API.
 
-FastAPI (`api.py`) is the primary interface; a thin CLI (`extract.py`), batch runner (`batch_extract.py`), and evaluation harness (`eval.py`) all call the same framework-independent `invoice_extractor.extractor.extract_invoice` function directly without going through HTTP.
+FastAPI (`api.py`) is the primary interface (including a minimal side-by-side review UI at `/` and Swagger docs at `/docs`); a thin CLI (`extract.py`), batch runner (`batch_extract.py`), and evaluation harness (`eval.py`) all call the same framework-independent `invoice_extractor.extractor.extract_invoice` function directly without going through HTTP.
+
+For full approach notes, accuracy tables, failure analysis, review-flag checks, and cost calculations, see **[REPORT.md](REPORT.md)**.
 
 ## Requirements
 
@@ -44,6 +46,7 @@ FastAPI (`api.py`) is the primary interface; a thin CLI (`extract.py`), batch ru
    - `MAX_UPLOAD_SIZE_MB` — maximum accepted upload size for `POST /extract` in MB (default: `20`)
    - `API_TIMEOUT_SECONDS` — request timeout for upstream Gemini calls in seconds (default: `45`)
    - `API_MAX_RETRIES` — max transient retries with exponential backoff on API errors/timeouts (default: `2`)
+   - `API_BACKOFF_BASE_SECONDS` — base delay in seconds for exponential backoff (default: `1.0`)
 
 ## Repository Layout
 
@@ -57,7 +60,9 @@ FastAPI (`api.py`) is the primary interface; a thin CLI (`extract.py`), batch ru
 │   └── index.html            # Minimal side-by-side upload & review frontend (Bonus)
 ├── extract.py                # Thin CLI wrapper for single-document extraction
 ├── batch_extract.py          # Batch runner calling extract_invoice() directly
-├── eval.py                   # Evaluation harness over L01..L10 (04_EVAL_RULES.md)
+├── eval.py                   # Evaluation harness over L01..L10
+├── generate_degraded.py      # Reproducible degraded-image generator (seed=42 -> degraded_samples/)
+├── robustness_eval.py        # Degraded robustness & 3x clean stability evaluation
 ├── cost_summary.py           # Token and USD cost summary CLI
 ├── REPORT.md                 # Completed evaluation, failure analysis, and cost report
 ├── invoice_extractor/
@@ -65,14 +70,14 @@ FastAPI (`api.py`) is the primary interface; a thin CLI (`extract.py`), batch ru
 │   ├── config.py             # Configurable paths, upload limit, timeout, and env loading
 │   ├── models.py             # Pydantic models mirroring schema.json
 │   ├── loader.py             # PDF page rendering (200 DPI) + EXIF-aware JPG/PNG loader
-│   ├── prompt.py             # System prompt (D8) and validation-retry feedback prompt
+│   ├── prompt.py             # System prompt and validation-retry feedback prompt
 │   ├── validator.py          # Strict schema + arithmetic validation (0.05 tolerance)
 │   ├── token_logger.py       # Append-only JSONL token logger (tracks retries)
 │   ├── extractor.py          # Reusable Gemini extractor (backoff + validate + retry/flag)
 │   ├── evaluator.py          # Per-field & line-item matching rules and reporting
 │   └── cost.py               # Paid list-price cost calculation & retry split
 ├── outputs/                  # Final extracted JSON for all 20 sample documents
-├── baselines/                # Saved raw Phase 2 baseline for before/after comparison
+├── baselines/                # Saved pre-validation raw baseline for before/after comparison
 ├── eval_results/             # Timestamped machine-readable eval results (*.json)
 └── logs/                     # Per-run JSONL token usage logs (*.jsonl)
 ```
@@ -105,6 +110,7 @@ HTTP status codes:
 
 ```bash
 python extract.py "Sample Pack/labelled/L01.pdf"
+python extract.py "Sample Pack/labelled/L01.pdf" > out.json
 ```
 
 Optional flags:
@@ -144,7 +150,15 @@ python eval.py --predictions-dir outputs --verbose
 
 Each run prints the per-field accuracy table, line-item sub-field accuracy, and review-flag stats, and saves a timestamped JSON summary to `eval_results/`.
 
-### 5. Cost summary
+### 5. Robustness & stability evaluation (optional stress test)
+
+Generate reproducible degraded copies (`blur`, `rotation`, `jpeg_compression`, `low_resolution`, `partial_crop` in git-ignored `degraded_samples/`), evaluate them with the untouched matching rules, and run 3 repeated clean passes:
+
+```bash
+python robustness_eval.py --seed 42 --stability-runs 3
+```
+
+### 6. Cost summary
 
 ```bash
 python cost_summary.py logs/final_run_tokens.jsonl
@@ -163,6 +177,6 @@ These two fields are kept separate from the schema-checked `InvoiceExtraction` m
 
 ## Validation & Bad-Input Handling
 
-- **Validation & retry once (D5, D6)**: Every model response is checked locally for strict JSON numeric types (rejecting string-encoded numbers), Pydantic `schema.json` conformance (including `is_invoice=false` all-null rules), and arithmetic consistency (`|sum(line_items.amount) + tax_total - total| <= 0.05`). On failure, the extractor retries **once** with the specific error message fed back; if it still fails, the output is returned with `needs_review: true` and `review_reasons`.
-- **Extra bad-input case — API errors and timeouts (D7)**: Upstream Gemini calls use a bounded HTTP timeout (`API_TIMEOUT_SECONDS`, default `45s`) and retry transient errors (`429`, `500`, `502`, `503`, `504`, timeouts, connection errors) up to `API_MAX_RETRIES` times with exponential backoff (`1s`, `2s`, ...). If retries are exhausted, the pipeline returns a clear error instead of crashing (`502`/`504` JSON in FastAPI; exit code `3` in CLI; explicit error JSON in `batch_extract.py`).
+- **Validation & retry once**: Every model response is checked locally for strict JSON numeric types (rejecting string-encoded numbers), Pydantic `schema.json` conformance (including `is_invoice=false` all-null rules), and arithmetic consistency (`|sum(line_items.amount) + tax_total - total| <= 0.05`). On failure, the extractor retries **once** with the specific error message fed back; if it still fails, the output is returned with `needs_review: true` and `review_reasons`.
+- **Extra bad-input case — API errors and timeouts**: Upstream Gemini calls use a bounded HTTP timeout (`API_TIMEOUT_SECONDS`, default `45s`) and retry transient errors (`429`, `500`, `502`, `503`, `504`, timeouts, connection errors) up to `API_MAX_RETRIES` times with exponential backoff (`1s`, `2s`, ...). If retries are exhausted, the pipeline returns a clear error instead of crashing (`502`/`504` JSON in FastAPI; exit code `3` in CLI; explicit error JSON in `batch_extract.py`).
 - **File validation**: Missing files, unsupported extensions (anything other than `.pdf`, `.jpg`, `.jpeg`, `.png`), empty files, oversized uploads (`> MAX_UPLOAD_SIZE_MB`), and corrupt/unreadable PDFs or images return clean `400` JSON errors in FastAPI (with temporary upload files always deleted in `finally:`) and exit code `2` in CLI.
